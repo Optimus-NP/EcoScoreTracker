@@ -13,6 +13,6 @@
     }
   ],
   "env": {
-    "SESSION_SECRET": "@session_secret"
+    "SESSION_SECRET": "my-very-secret-key"
   }
 }
