@@ -1,18 +1,23 @@
 {
   "version": 2,
-  "functions": {
-    "api/app.py": {
-      "runtime": "@vercel/python@0.5.2",
-      "maxDuration": 60
+  "builds": [
+    {
+      "src": "api/app.py",
+      "use": "@vercel/python"
     }
-  },
+  ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "api/app.py"
+      "dest": "app.py"
     }
   ],
   "env": {
-    "SESSION_SECRET": "my-very-secret-key"
+    "SESSION_SECRET": "@session_secret"
+  },
+  "functions": {
+    "app.py": {
+      "maxDuration": 60
+    }
   }
 }
