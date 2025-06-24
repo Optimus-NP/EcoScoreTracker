@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block title %}Packaging Suggestions - Sustainability Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-box me-2"></i>Packaging Suggestions</h1>
+        <p class="text-muted">Get AI-powered packaging recommendations based on product characteristics and sustainability factors.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Form -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-edit me-2"></i>Product Information</h5>
+            </div>
+            <div class="card-body">
+                <form id="packagingForm">
+                    <div class="mb-3">
+                        <label for="materialType" class="form-label">Material Type</label>
+                        <select class="form-select" id="materialType" name="Material_Type" required>
+                            <option value="">Select Material</option>
+                            <option value="Glass">Glass</option>
+                            <option value="Plastic">Plastic</option>
+                            <option value="Metal">Metal</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Cardboard">Cardboard</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="productWeight" class="form-label">Product Weight (grams)</label>
+                        <input type="number" class="form-control" id="productWeight" name="Product_Weight_g" 
+                               min="1" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="fragility" class="form-label">Fragility Level</label>
+                        <select class="form-select" id="fragility" name="Fragility" required>
+                            <option value="">Select Fragility</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="recyclable" class="form-label">Is Recyclable?</label>
+                        <select class="form-select" id="recyclable" name="Recyclable" required>
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="transportMode" class="form-label">Transport Mode</label>
+                        <select class="form-select" id="transportMode" name="Transport_Mode" required>
+                            <option value="">Select Transport</option>
+                            <option value="Land">Land</option>
+                            <option value="Air">Air</option>
+                            <option value="Sea">Sea</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="lcaEmission" class="form-label">LCA Emission (kg CO2)</label>
+                        <input type="number" class="form-control" id="lcaEmission" name="LCA_Emission_kgCO2" 
+                               min="0" step="0.01" required>
+                        <div class="form-text">Life Cycle Assessment carbon emission</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Get Packaging Suggestion
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb me-2"></i>Recommendation</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer" class="text-center text-muted">
+                    <i class="fas fa-box fa-4x mb-3 opacity-25"></i>
+                    <p>Enter product details to get packaging suggestions</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Importance Chart -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Feature Importance</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="featureChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Data Examples -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb me-2"></i>Sample Examples</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Fragile Glass Product</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSample('glass')">Load Example</button>
+                        <small class="d-block text-muted mt-1">Glass, 150g, High fragility, Land transport</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Lightweight Plastic Item</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSample('plastic')">Load Example</button>
+                        <small class="d-block text-muted mt-1">Plastic, 50g, Low fragility, Air transport</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Heavy Metal Component</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSample('metal')">Load Example</button>
+                        <small class="d-block text-muted mt-1">Metal, 500g, Medium fragility, Sea transport</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let featureChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadFeatureImportance();
+    
+    document.getElementById('packagingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        getPrediction();
+    });
+});
+
+function getPrediction() {
+    const formData = new FormData(document.getElementById('packagingForm'));
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert numeric fields
+    data.Product_Weight_g = parseFloat(data.Product_Weight_g);
+    data.LCA_Emission_kgCO2 = parseFloat(data.LCA_Emission_kgCO2);
+    
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('/api/packaging/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        modal.hide();
+        displayResults(result);
+    })
+    .catch(error => {
+        modal.hide();
+        console.error('Error:', error);
+        displayError('Error getting prediction: ' + error.message);
+    });
+}
+
+function displayResults(result) {
+    const container = document.getElementById('resultsContainer');
+    
+    if (result.success) {
+        const confidence = (result.confidence * 100).toFixed(1);
+        
+        let alternativesHtml = '';
+        if (result.all_probabilities) {
+            const sortedProbs = Object.entries(result.all_probabilities)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3);
+            
+            alternativesHtml = `
+                <div class="mt-3">
+                    <h6>Top Recommendations:</h6>
+                    <div class="list-group list-group-flush">
+                        ${sortedProbs.map((prob, index) => `
+                            <div class="list-group-item d-flex justify-content-between align-items-center ${index === 0 ? 'bg-success bg-opacity-10' : ''}">
+                                <span>${prob[0]}</span>
+                                <span class="badge ${index === 0 ? 'bg-success' : 'bg-secondary'}">${(prob[1] * 100).toFixed(1)}%</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = `
+            <div class="text-success">
+                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                <h4>Recommended Packaging</h4>
+                <div class="alert alert-success">
+                    <h5 class="mb-0">${result.prediction}</h5>
+                    <small>Confidence: ${confidence}%</small>
+                </div>
+                ${alternativesHtml}
+            </div>
+        `;
+    } else {
+        displayError(result.error);
+    }
+}
+
+function displayError(error) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+        <div class="text-danger">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Error</h5>
+            <div class="alert alert-danger">
+                ${error}
+            </div>
+        </div>
+    `;
+}
+
+function loadFeatureImportance() {
+    fetch('/api/packaging/feature-importance')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                displayFeatureImportance(result.feature_importance);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading feature importance:', error);
+        });
+}
+
+function displayFeatureImportance(importance) {
+    const ctx = document.getElementById('featureChart').getContext('2d');
+    
+    const features = Object.keys(importance);
+    const values = Object.values(importance);
+    
+    if (featureChart) {
+        featureChart.destroy();
+    }
+    
+    featureChart = new Chart(ctx, {
+        type: 'horizontalBar',
+        data: {
+            labels: features,
+            datasets: [{
+                label: 'Importance',
+                data: values,
+                backgroundColor: 'rgba(13, 110, 253, 0.8)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function loadSample(type) {
+    const samples = {
+        glass: {
+            Material_Type: 'Glass',
+            Product_Weight_g: 150,
+            Fragility: 'High',
+            Recyclable: 'Yes',
+            Transport_Mode: 'Land',
+            LCA_Emission_kgCO2: 1.89
+        },
+        plastic: {
+            Material_Type: 'Plastic',
+            Product_Weight_g: 50,
+            Fragility: 'Low',
+            Recyclable: 'Yes',
+            Transport_Mode: 'Air',
+            LCA_Emission_kgCO2: 0.85
+        },
+        metal: {
+            Material_Type: 'Metal',
+            Product_Weight_g: 500,
+            Fragility: 'Medium',
+            Recyclable: 'Yes',
+            Transport_Mode: 'Sea',
+            LCA_Emission_kgCO2: 3.2
+        }
+    };
+    
+    const sample = samples[type];
+    if (sample) {
+        Object.keys(sample).forEach(key => {
+            const element = document.querySelector(`[name="${key}"]`);
+            if (element) {
+                element.value = sample[key];
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

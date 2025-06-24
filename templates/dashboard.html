@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sustainability Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-tachometer-alt me-2"></i>Sustainability Analytics Dashboard</h1>
+            <div>
+                <button class="btn btn-primary" onclick="trainModels()">
+                    <i class="fas fa-cog me-1"></i>Train All Models
+                </button>
+                <button class="btn btn-secondary" onclick="checkModelsStatus()">
+                    <i class="fas fa-refresh me-1"></i>Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Status Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-box fa-2x text-primary mb-3"></i>
+                <h5 class="card-title">Packaging Model</h5>
+                <span class="badge" id="packaging-status">Unknown</span>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.packaging') }}" class="btn btn-sm btn-outline-primary">Use Model</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-smog fa-2x text-warning mb-3"></i>
+                <h5 class="card-title">Carbon Footprint</h5>
+                <span class="badge" id="carbon-status">Unknown</span>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.carbon_footprint') }}" class="btn btn-sm btn-outline-warning">Use Model</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-shopping-cart fa-2x text-success mb-3"></i>
+                <h5 class="card-title">Product Recommendations</h5>
+                <span class="badge" id="product-status">Unknown</span>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.product_recommendation') }}" class="btn btn-sm btn-outline-success">Use Model</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x text-info mb-3"></i>
+                <h5 class="card-title">ESG Score</h5>
+                <span class="badge" id="esg-status">Unknown</span>
+                <div class="mt-2">
+                    <a href="{{ url_for('main.esg_score') }}" class="btn btn-sm btn-outline-info">Use Model</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Individual Predictions</h6>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('main.packaging') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-box me-2"></i>Get Packaging Suggestion
+                            </a>
+                            <a href="{{ url_for('main.carbon_footprint') }}" class="btn btn-outline-warning">
+                                <i class="fas fa-smog me-2"></i>Calculate Carbon Footprint
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Analysis & Recommendations</h6>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('main.product_recommendation') }}" class="btn btn-outline-success">
+                                <i class="fas fa-shopping-cart me-2"></i>Product Recommendations
+                            </a>
+                            <a href="{{ url_for('main.esg_score') }}" class="btn btn-outline-info">
+                                <i class="fas fa-chart-line me-2"></i>ESG Score Analysis
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <a href="{{ url_for('main.batch_processing') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-upload me-2"></i>Batch Process Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Performance Overview -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Model Performance</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="performanceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Platform Features</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        AI-powered packaging recommendations
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Carbon footprint prediction and analysis
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Sustainable product recommendations
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        ESG score assessment and insights
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Batch processing for large datasets
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        Real-time visualization and reporting
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Training Results Modal -->
+<div class="modal fade" id="trainingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Model Training Results</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="trainingResults">
+                <!-- Training results will be displayed here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    checkModelsStatus();
+    initPerformanceChart();
+});
+
+function checkModelsStatus() {
+    fetch('/api/models/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateStatusBadges(data.models_status);
+            } else {
+                console.error('Error checking model status:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+function updateStatusBadges(status) {
+    const badges = {
+        'packaging': document.getElementById('packaging-status'),
+        'carbon_footprint': document.getElementById('carbon-status'),
+        'product_recommendation': document.getElementById('product-status'),
+        'esg_score': document.getElementById('esg-status')
+    };
+
+    Object.keys(status).forEach(model => {
+        const badge = badges[model];
+        if (badge) {
+            if (status[model]) {
+                badge.textContent = 'Ready';
+                badge.className = 'badge bg-success';
+            } else {
+                badge.textContent = 'Not Trained';
+                badge.className = 'badge bg-warning';
+            }
+        }
+    });
+}
+
+function trainModels() {
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('/api/models/train', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        modal.hide();
+        
+        if (data.success) {
+            displayTrainingResults(data.training_results);
+            checkModelsStatus(); // Refresh status
+        } else {
+            alert('Error training models: ' + data.error);
+        }
+    })
+    .catch(error => {
+        modal.hide();
+        console.error('Error:', error);
+        alert('Error training models: ' + error.message);
+    });
+}
+
+function displayTrainingResults(results) {
+    const modalBody = document.getElementById('trainingResults');
+    let html = '<div class="row">';
+    
+    Object.keys(results).forEach(model => {
+        const result = results[model];
+        const success = result.success;
+        
+        html += `
+            <div class="col-md-6 mb-3">
+                <div class="card ${success ? 'border-success' : 'border-danger'}">
+                    <div class="card-header">
+                        <h6 class="mb-0">${model.replace('_', ' ').toUpperCase()}</h6>
+                    </div>
+                    <div class="card-body">
+                        <span class="badge ${success ? 'bg-success' : 'bg-danger'} mb-2">
+                            ${success ? 'Success' : 'Failed'}
+                        </span>
+                        ${success ? `
+                            <div class="small">
+                                ${result.accuracy ? `<div>Accuracy: ${(result.accuracy * 100).toFixed(2)}%</div>` : ''}
+                                ${result.r2_score ? `<div>R² Score: ${result.r2_score.toFixed(4)}</div>` : ''}
+                                ${result.rmse ? `<div>RMSE: ${result.rmse.toFixed(2)}</div>` : ''}
+                            </div>
+                        ` : `
+                            <div class="text-danger small">${result.error}</div>
+                        `}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    modalBody.innerHTML = html;
+    
+    const trainingModal = new bootstrap.Modal(document.getElementById('trainingModal'));
+    trainingModal.show();
+}
+
+function initPerformanceChart() {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    // Sample performance data - in a real app, this would come from the API
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Packaging', 'Carbon Footprint', 'Product Rec.', 'ESG Score'],
+            datasets: [{
+                label: 'Model Accuracy (%)',
+                data: [85, 78, 82, 77],
+                backgroundColor: [
+                    'rgba(13, 110, 253, 0.8)',
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(13, 202, 240, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(13, 110, 253, 1)',
+                    'rgba(255, 193, 7, 1)',
+                    'rgba(25, 135, 84, 1)',
+                    'rgba(13, 202, 240, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

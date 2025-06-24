@@ -1,0 +1,230 @@
+/* Custom CSS for Sustainability Analytics Platform */
+/* Following Bootstrap dark theme guidelines - minimal custom styles */
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Chart containers */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Feature importance charts */
+#featureChart {
+    max-height: 300px;
+}
+
+/* Progress indicators */
+.progress {
+    height: 8px;
+}
+
+/* Custom card hover effects */
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Badge variations for status */
+.badge.bg-ready {
+    background-color: var(--bs-success) !important;
+}
+
+.badge.bg-not-trained {
+    background-color: var(--bs-warning) !important;
+}
+
+/* Table responsiveness improvements */
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Form improvements */
+.form-text {
+    font-size: 0.875rem;
+    opacity: 0.8;
+}
+
+/* File upload styling */
+.form-control:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Results containers */
+.results-container .opacity-25 {
+    opacity: 0.25 !important;
+}
+
+/* Sustainability metrics styling */
+.sustainability-metric {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--bs-light);
+    margin-bottom: 1rem;
+}
+
+/* Model status indicators */
+.model-status-card {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Progress chart improvements */
+#progressChart {
+    max-height: 200px;
+}
+
+/* Batch processing results */
+.batch-summary-card {
+    min-height: 120px;
+}
+
+/* Error states */
+.error-state {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Success states */
+.success-state {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Feature importance visualization */
+.feature-importance-container {
+    min-height: 300px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+    
+    .model-status-card {
+        min-height: 150px;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+    
+    .chart-container {
+        height: 200px;
+    }
+    
+    .btn {
+        font-size: 0.875rem;
+    }
+}
+
+/* Dark mode specific adjustments */
+[data-bs-theme="dark"] {
+    /* Ensure proper contrast for custom elements */
+    --custom-text-muted: rgba(255, 255, 255, 0.6);
+    --custom-border-color: rgba(255, 255, 255, 0.125);
+}
+
+[data-bs-theme="dark"] .form-text {
+    color: var(--custom-text-muted);
+}
+
+[data-bs-theme="dark"] .opacity-25 {
+    opacity: 0.4 !important;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    .card {
+        break-inside: avoid;
+        border: 1px solid #000;
+    }
+    
+    .btn {
+        display: none;
+    }
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+/* Accessibility improvements */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus improvements */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .card {
+        border-width: 2px;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .card {
+        transition: none;
+    }
+    
+    .pulse {
+        animation: none;
+    }
+}

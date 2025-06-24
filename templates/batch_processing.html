@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Processing - Sustainability Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-upload me-2"></i>Batch Processing</h1>
+        <p class="text-muted">Upload CSV files to process multiple predictions at once using any of the sustainability analytics models.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Upload Form -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-file-upload me-2"></i>Upload Data File</h5>
+            </div>
+            <div class="card-body">
+                <form id="batchForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="modelType" class="form-label">Select Model Type</label>
+                        <select class="form-select" id="modelType" name="model_type" required>
+                            <option value="">Choose Model</option>
+                            <option value="packaging">Packaging Suggestions</option>
+                            <option value="carbon_footprint">Carbon Footprint Prediction</option>
+                            <option value="product_recommendation">Product Recommendations</option>
+                            <option value="esg_score">ESG Score Analysis</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="dataFile" class="form-label">CSV Data File</label>
+                        <input type="file" class="form-control" id="dataFile" name="file" accept=".csv" required>
+                        <div class="form-text">Upload a CSV file with the required columns for your selected model.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-play me-2"></i>Process Batch Data
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- File Requirements -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>File Requirements</h5>
+            </div>
+            <div class="card-body">
+                <div id="requirementsContainer">
+                    <p class="text-muted">Select a model type to see the required CSV columns.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Processing Results</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer" class="text-center text-muted">
+                    <i class="fas fa-upload fa-4x mb-3 opacity-25"></i>
+                    <p>Upload and process a CSV file to see results here</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Progress Chart -->
+        <div class="card mt-4" id="progressCard" style="display: none;">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie me-2"></i>Processing Summary</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Files -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-download me-2"></i>Sample Data Files</h5>
+            </div>
+            <div class="card-body">
+                <p>Download sample CSV files to understand the required format for each model:</p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-primary w-100 mb-2" onclick="downloadSample('packaging')">
+                            <i class="fas fa-box me-2"></i>Packaging Sample
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-warning w-100 mb-2" onclick="downloadSample('carbon_footprint')">
+                            <i class="fas fa-smog me-2"></i>Carbon Sample
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-success w-100 mb-2" onclick="downloadSample('product_recommendation')">
+                            <i class="fas fa-shopping-cart me-2"></i>Product Sample
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-outline-info w-100 mb-2" onclick="downloadSample('esg_score')">
+                            <i class="fas fa-chart-line me-2"></i>ESG Sample
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table Modal -->
+<div class="modal fade" id="resultsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detailed Results</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="resultsTable">
+                        <thead id="resultsTableHead"></thead>
+                        <tbody id="resultsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="exportResults()">
+                    <i class="fas fa-download me-2"></i>Export Results
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentResults = null;
+let progressChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('modelType').addEventListener('change', updateRequirements);
+    document.getElementById('batchForm').addEventListener('submit', processBatch);
+});
+
+function updateRequirements() {
+    const modelType = document.getElementById('modelType').value;
+    const container = document.getElementById('requirementsContainer');
+    
+    const requirements = {
+        packaging: {
+            title: 'Packaging Suggestions',
+            columns: [
+                'Material_Type (Glass, Plastic, Metal, Paper, Cardboard)',
+                'Product_Weight_g (numeric)',
+                'Fragility (Low, Medium, High)',
+                'Recyclable (Yes, No)',
+                'Transport_Mode (Land, Air, Sea)',
+                'LCA_Emission_kgCO2 (numeric)'
+            ]
+        },
+        carbon_footprint: {
+            title: 'Carbon Footprint Prediction',
+            columns: [
+                'Total_Purchases (numeric)',
+                'Avg_Distance_km (numeric)',
+                'Preferred_Packaging (Cardboard, Plastic, Paper, Metal, Glass)',
+                'Returns_% (numeric)',
+                'Electricity_kWh (numeric)',
+                'Travel_km (numeric)',
+                'Service_Usage_hr (numeric)'
+            ]
+        },
+        product_recommendation: {
+            title: 'Product Recommendations',
+            columns: [
+                'category (Clothing, Electronics, Beauty, Home, Sports)',
+                'material (Cotton, Polyester, Metal, Plastic, Wood, Glass)',
+                'brand (EcoBrand, GreenTech, SustainableCorp, NaturalGoods, CleanLiving)',
+                'price (numeric)',
+                'rating (numeric, 1-5)',
+                'reviewsCount (numeric)',
+                'Carbon_Footprint_MT (numeric)',
+                'Water_Usage_Liters (numeric)',
+                'Waste_Production_KG (numeric)',
+                'Average_Price_USD (numeric)'
+            ]
+        },
+        esg_score: {
+            title: 'ESG Score Analysis',
+            columns: [
+                'Product Name (text)',
+                'Sentence (text description/review)',
+                'Sentiment (Positive, Negative, Neutral)',
+                'Environmental Score (numeric, 0-100)'
+            ]
+        }
+    };
+    
+    if (modelType && requirements[modelType]) {
+        const req = requirements[modelType];
+        container.innerHTML = `
+            <h6>${req.title} - Required Columns:</h6>
+            <ul class="list-group list-group-flush">
+                ${req.columns.map(col => `<li class="list-group-item">${col}</li>`).join('')}
+            </ul>
+        `;
+    } else {
+        container.innerHTML = '<p class="text-muted">Select a model type to see the required CSV columns.</p>';
+    }
+}
+
+function processBatch(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(document.getElementById('batchForm'));
+    const file = formData.get('file');
+    
+    if (!file || file.size === 0) {
+        alert('Please select a CSV file to upload.');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('/api/batch-process', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        modal.hide();
+        displayBatchResults(result);
+    })
+    .catch(error => {
+        modal.hide();
+        console.error('Error:', error);
+        displayError('Error processing batch data: ' + error.message);
+    });
+}
+
+function displayBatchResults(result) {
+    const container = document.getElementById('resultsContainer');
+    
+    if (result.success) {
+        currentResults = result;
+        
+        const successRate = ((result.successful_predictions / result.total_rows) * 100).toFixed(1);
+        
+        container.innerHTML = `
+            <div class="text-success">
+                <i class="fas fa-check-circle fa-3x mb-3"></i>
+                <h4>Batch Processing Complete</h4>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3>${result.total_rows}</h3>
+                                <small>Total Rows</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3>${result.successful_predictions}</h3>
+                                <small>Successful</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h3>${result.failed_predictions}</h3>
+                                <small>Failed</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" style="width: ${successRate}%"></div>
+                    </div>
+                    <p class="mb-0">Success Rate: ${successRate}%</p>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary me-2" onclick="showDetailedResults()">
+                        <i class="fas fa-table me-2"></i>View Detailed Results
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportResults()">
+                        <i class="fas fa-download me-2"></i>Export Results
+                    </button>
+                </div>
+                ${result.errors.length > 0 ? `
+                    <div class="mt-3">
+                        <h6>Processing Errors:</h6>
+                        <div class="alert alert-warning">
+                            <small>${result.errors.length} rows failed processing. View detailed results for more information.</small>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        displayProgressChart(result);
+    } else {
+        displayError(result.error);
+    }
+}
+
+function displayProgressChart(result) {
+    const ctx = document.getElementById('progressChart').getContext('2d');
+    
+    if (progressChart) {
+        progressChart.destroy();
+    }
+    
+    progressChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Successful', 'Failed'],
+            datasets: [{
+                data: [result.successful_predictions, result.failed_predictions],
+                backgroundColor: [
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(25, 135, 84, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    document.getElementById('progressCard').style.display = 'block';
+}
+
+function showDetailedResults() {
+    if (!currentResults) return;
+    
+    const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+    const tableHead = document.getElementById('resultsTableHead');
+    const tableBody = document.getElementById('resultsTableBody');
+    
+    // Clear previous results
+    tableHead.innerHTML = '';
+    tableBody.innerHTML = '';
+    
+    if (currentResults.results.length > 0) {
+        // Create table headers
+        const firstResult = currentResults.results[0];
+        const headers = Object.keys(firstResult).filter(key => key !== 'success');
+        
+        let headerRow = '<tr>';
+        headers.forEach(header => {
+            headerRow += `<th>${header}</th>`;
+        });
+        headerRow += '</tr>';
+        tableHead.innerHTML = headerRow;
+        
+        // Create table rows
+        currentResults.results.forEach((result, index) => {
+            let row = '<tr>';
+            headers.forEach(header => {
+                let value = result[header];
+                if (typeof value === 'object') {
+                    value = JSON.stringify(value);
+                }
+                row += `<td>${value}</td>`;
+            });
+            row += '</tr>';
+            tableBody.innerHTML += row;
+        });
+    }
+    
+    modal.show();
+}
+
+function exportResults() {
+    if (!currentResults) return;
+    
+    // Convert results to CSV
+    const csvContent = convertToCSV(currentResults.results);
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'batch_results.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function convertToCSV(data) {
+    if (data.length === 0) return '';
+    
+    const headers = Object.keys(data[0]).filter(key => key !== 'success');
+    let csv = headers.join(',') + '\n';
+    
+    data.forEach(row => {
+        const values = headers.map(header => {
+            let value = row[header];
+            if (typeof value === 'object') {
+                value = JSON.stringify(value);
+            }
+            return `"${value}"`;
+        });
+        csv += values.join(',') + '\n';
+    });
+    
+    return csv;
+}
+
+function downloadSample(modelType) {
+    const samples = {
+        packaging: [
+            ['Material_Type', 'Product_Weight_g', 'Fragility', 'Recyclable', 'Transport_Mode', 'LCA_Emission_kgCO2'],
+            ['Glass', '150', 'High', 'Yes', 'Land', '1.89'],
+            ['Plastic', '50', 'Low', 'Yes', 'Air', '0.85'],
+            ['Metal', '500', 'Medium', 'Yes', 'Sea', '3.2']
+        ],
+        carbon_footprint: [
+            ['Total_Purchases', 'Avg_Distance_km', 'Preferred_Packaging', 'Returns_%', 'Electricity_kWh', 'Travel_km', 'Service_Usage_hr'],
+            ['15', '450', 'Cardboard', '3', '320', '1000', '25'],
+            ['8', '150', 'Paper', '1.5', '180', '300', '15'],
+            ['35', '800', 'Plastic', '8.5', '550', '2500', '45']
+        ],
+        product_recommendation: [
+            ['category', 'material', 'brand', 'price', 'rating', 'reviewsCount', 'Carbon_Footprint_MT', 'Water_Usage_Liters', 'Waste_Production_KG', 'Average_Price_USD'],
+            ['Clothing', 'Cotton', 'EcoBrand', '45', '4.3', '156', '2.1', '1200', '0.8', '42'],
+            ['Electronics', 'Metal', 'GreenTech', '299', '4.1', '89', '8.5', '450', '3.2', '315'],
+            ['Home', 'Wood', 'SustainableCorp', '125', '4.5', '203', '3.8', '220', '1.1', '135']
+        ],
+        esg_score: [
+            ['Product Name', 'Sentence', 'Sentiment', 'Environmental Score'],
+            ['Solar Energy Panel', 'This solar energy panel demonstrates excellent sustainability practices with zero carbon emissions.', 'Positive', '85'],
+            ['Traditional Appliance', 'This appliance offers decent functionality but has moderate environmental impact.', 'Neutral', '55'],
+            ['Fossil fuel Cars', 'The product heavily relies on non-renewable sources and is harmful to the environment.', 'Negative', '25']
+        ]
+    };
+    
+    const sampleData = samples[modelType];
+    if (!sampleData) return;
+    
+    const csvContent = sampleData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${modelType}_sample.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function displayError(error) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+        <div class="text-danger">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Processing Error</h5>
+            <div class="alert alert-danger">
+                ${error}
+            </div>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

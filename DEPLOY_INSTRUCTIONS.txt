@@ -1,0 +1,42 @@
+
+SUSTAINABILITY ANALYTICS PLATFORM - DEPLOYMENT INSTRUCTIONS
+===========================================================
+
+1. UPLOAD TO GITHUB:
+   - Go to: https://github.com/Priyanshu2631/Sustainable-Recommendations
+   - Upload all files from the 'deployment_package' folder
+   - Or extract 'sustainability_analytics_deployment.zip' and upload contents
+
+2. CONNECT TO VERCEL:
+   - Go to: https://vercel.com/priyanshu2631s-projects/sustainable-shopping
+   - Settings > Git Repository > Connect Repository
+   - Select: Priyanshu2631/Sustainable-Recommendations
+
+3. CONFIGURE ENVIRONMENT:
+   - In Vercel dashboard: Settings > Environment Variables
+   - Add: SESSION_SECRET = (any random string like: sk_12345_abcdef)
+
+4. DEPLOY:
+   - Push to GitHub main branch
+   - Vercel will auto-deploy
+   - Or manually trigger from Vercel dashboard
+
+5. TEST:
+   - Visit your deployed URL
+   - Test all 4 ML models (packaging, carbon footprint, products, ESG)
+   - Try batch CSV upload
+   - Verify dashboard charts work
+
+SUPPORT:
+- All files are optimized for Vercel serverless deployment
+- 60-second timeout configured for ML operations
+- Bootstrap dark theme with responsive design
+- Chart.js configured for modern browsers
+
+MODELS INCLUDED:
+✓ Packaging Suggestion Model
+✓ Carbon Footprint Prediction
+✓ Product Recommendation Engine  
+✓ ESG Score Analysis
+✓ Batch Processing System
+✓ Interactive Dashboard

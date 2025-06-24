@@ -1,0 +1,21 @@
+Product_ID,Material_Type,Product_Weight_g,Fragility,Recyclable,Transport_Mode,LCA_Emission_kgCO2,Packaging_Option
+P0001,Glass,150.0,High,Yes,Land,1.89,Bubble Wrap
+P0002,Plastic,50.0,Low,Yes,Air,0.85,Plastic Container
+P0003,Metal,500.0,Medium,Yes,Sea,3.2,Cardboard Box
+P0004,Paper,25.0,Low,Yes,Land,0.45,Paper Bag
+P0005,Cardboard,75.0,Low,Yes,Land,1.1,Cardboard Box
+P0006,Glass,200.0,High,Yes,Air,2.85,Bubble Wrap
+P0007,Plastic,80.0,Medium,Yes,Land,1.2,Plastic Container
+P0008,Metal,350.0,Medium,Yes,Sea,2.8,Metal Can
+P0009,Paper,40.0,Low,Yes,Land,0.6,Paper Bag
+P0010,Glass,120.0,High,Yes,Land,1.65,Bubble Wrap
+P0011,Plastic,60.0,Low,No,Air,1.15,Plastic Container
+P0012,Metal,600.0,High,Yes,Sea,4.2,Cardboard Box
+P0013,Cardboard,90.0,Medium,Yes,Land,1.35,Cardboard Box
+P0014,Paper,30.0,Low,Yes,Air,0.75,Paper Bag
+P0015,Glass,180.0,High,Yes,Sea,2.45,Bubble Wrap
+P0016,Plastic,70.0,Medium,Yes,Land,1.05,Plastic Container
+P0017,Metal,450.0,Medium,Yes,Air,3.8,Metal Can
+P0018,Paper,35.0,Low,Yes,Land,0.55,Paper Bag
+P0019,Cardboard,100.0,Medium,Yes,Sea,1.6,Cardboard Box
+P0020,Glass,250.0,High,No,Land,3.2,Bubble Wrap

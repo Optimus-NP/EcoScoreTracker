@@ -1,0 +1,488 @@
+{% extends "base.html" %}
+
+{% block title %}Product Recommendations - Sustainability Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-shopping-cart me-2"></i>Product Recommendations</h1>
+        <p class="text-muted">Get AI-powered recommendations for sustainable product purchases based on environmental impact and user preferences.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Form -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-tag me-2"></i>Product Details</h5>
+            </div>
+            <div class="card-body">
+                <form id="productForm">
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="Clothing">Clothing</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Beauty">Beauty</option>
+                            <option value="Home">Home</option>
+                            <option value="Sports">Sports</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="material" class="form-label">Material</label>
+                        <select class="form-select" id="material" name="material" required>
+                            <option value="">Select Material</option>
+                            <option value="Cotton">Cotton</option>
+                            <option value="Polyester">Polyester</option>
+                            <option value="Metal">Metal</option>
+                            <option value="Plastic">Plastic</option>
+                            <option value="Wood">Wood</option>
+                            <option value="Glass">Glass</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="brand" class="form-label">Brand</label>
+                        <select class="form-select" id="brand" name="brand" required>
+                            <option value="">Select Brand</option>
+                            <option value="EcoBrand">EcoBrand</option>
+                            <option value="GreenTech">GreenTech</option>
+                            <option value="SustainableCorp">SustainableCorp</option>
+                            <option value="NaturalGoods">NaturalGoods</option>
+                            <option value="CleanLiving">CleanLiving</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price ($)</label>
+                        <input type="number" class="form-control" id="price" name="price" 
+                               min="1" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="rating" class="form-label">Rating (1-5)</label>
+                        <input type="number" class="form-control" id="rating" name="rating" 
+                               min="1" max="5" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reviewsCount" class="form-label">Number of Reviews</label>
+                        <input type="number" class="form-control" id="reviewsCount" name="reviewsCount" 
+                               min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="carbonFootprint" class="form-label">Carbon Footprint (MT CO2)</label>
+                        <input type="number" class="form-control" id="carbonFootprint" name="Carbon_Footprint_MT" 
+                               min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="waterUsage" class="form-label">Water Usage (Liters)</label>
+                        <input type="number" class="form-control" id="waterUsage" name="Water_Usage_Liters" 
+                               min="0" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="wasteProduction" class="form-label">Waste Production (KG)</label>
+                        <input type="number" class="form-control" id="wasteProduction" name="Waste_Production_KG" 
+                               min="0" step="0.01" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="averagePrice" class="form-label">Category Average Price ($)</label>
+                        <input type="number" class="form-control" id="averagePrice" name="Average_Price_USD" 
+                               min="1" step="0.01" required>
+                        <div class="form-text">Average price for similar products in this category</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-magic me-2"></i>Get Recommendation
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-star me-2"></i>Recommendation Result</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer" class="text-center text-muted">
+                    <i class="fas fa-shopping-cart fa-4x mb-3 opacity-25"></i>
+                    <p>Enter product details to get purchase recommendations</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Importance Chart -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Decision Factors</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="featureChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Products -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cubes me-2"></i>Sample Products</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Eco-Friendly Clothing</h6>
+                        <button class="btn btn-sm btn-outline-success" onclick="loadSample('clothing')">Load Product</button>
+                        <small class="d-block text-muted mt-1">Organic cotton shirt with low environmental impact</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Green Electronics</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSample('electronics')">Load Product</button>
+                        <small class="d-block text-muted mt-1">Energy-efficient device with recyclable components</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Sustainable Home Item</h6>
+                        <button class="btn btn-sm btn-outline-info" onclick="loadSample('home')">Load Product</button>
+                        <small class="d-block text-muted mt-1">Bamboo furniture with minimal processing</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sustainability Metrics -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-leaf me-2"></i>Sustainability Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-smog text-danger fa-2x"></i>
+                            <h6 class="mt-2">Carbon Footprint</h6>
+                            <small>Lower is better<br>&lt; 5 MT = Excellent</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-tint text-primary fa-2x"></i>
+                            <h6 class="mt-2">Water Usage</h6>
+                            <small>Minimize consumption<br>&lt; 500L = Good</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-trash text-warning fa-2x"></i>
+                            <h6 class="mt-2">Waste Production</h6>
+                            <small>Reduce waste<br>&lt; 2 KG = Sustainable</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-star text-success fa-2x"></i>
+                            <h6 class="mt-2">Overall Rating</h6>
+                            <small>User satisfaction<br>&gt; 4.0 = Recommended</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let featureChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadFeatureImportance();
+    
+    document.getElementById('productForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        getPrediction();
+    });
+});
+
+function getPrediction() {
+    const formData = new FormData(document.getElementById('productForm'));
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert numeric fields
+    data.price = parseFloat(data.price);
+    data.rating = parseFloat(data.rating);
+    data.reviewsCount = parseInt(data.reviewsCount);
+    data.Carbon_Footprint_MT = parseFloat(data.Carbon_Footprint_MT);
+    data.Water_Usage_Liters = parseFloat(data.Water_Usage_Liters);
+    data.Waste_Production_KG = parseFloat(data.Waste_Production_KG);
+    data.Average_Price_USD = parseFloat(data.Average_Price_USD);
+    
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('/api/product-recommendation/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        modal.hide();
+        displayResults(result);
+    })
+    .catch(error => {
+        modal.hide();
+        console.error('Error:', error);
+        displayError('Error getting recommendation: ' + error.message);
+    });
+}
+
+function displayResults(result) {
+    const container = document.getElementById('resultsContainer');
+    
+    if (result.success) {
+        const likelihood = (result.purchase_likelihood * 100).toFixed(1);
+        const isRecommended = result.recommendation;
+        
+        const recommendation = isRecommended ? {
+            class: 'success',
+            icon: 'fa-thumbs-up',
+            title: 'Recommended',
+            message: 'This product is recommended for purchase!'
+        } : {
+            class: 'warning',
+            icon: 'fa-thumbs-down',
+            title: 'Not Recommended',
+            message: 'Consider alternatives with better sustainability metrics.'
+        };
+        
+        container.innerHTML = `
+            <div class="text-${recommendation.class}">
+                <i class="fas ${recommendation.icon} fa-3x mb-3"></i>
+                <h4>${recommendation.title}</h4>
+                <div class="alert alert-${recommendation.class}">
+                    <h5 class="mb-1">Purchase Likelihood: ${likelihood}%</h5>
+                    <p class="mb-0">${recommendation.message}</p>
+                </div>
+                <div class="mt-3">
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-${recommendation.class}" 
+                             style="width: ${likelihood}%" 
+                             aria-valuenow="${likelihood}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100"></div>
+                    </div>
+                    <small class="text-muted">Based on sustainability factors and user ratings</small>
+                </div>
+                ${getSustainabilityAnalysis(result, getData())}
+            </div>
+        `;
+    } else {
+        displayError(result.error);
+    }
+}
+
+function getData() {
+    const formData = new FormData(document.getElementById('productForm'));
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert numeric fields
+    data.price = parseFloat(data.price);
+    data.rating = parseFloat(data.rating);
+    data.reviewsCount = parseInt(data.reviewsCount);
+    data.Carbon_Footprint_MT = parseFloat(data.Carbon_Footprint_MT);
+    data.Water_Usage_Liters = parseFloat(data.Water_Usage_Liters);
+    data.Waste_Production_KG = parseFloat(data.Waste_Production_KG);
+    data.Average_Price_USD = parseFloat(data.Average_Price_USD);
+    
+    return data;
+}
+
+function getSustainabilityAnalysis(result, data) {
+    const metrics = [
+        {
+            name: 'Carbon Footprint',
+            value: data.Carbon_Footprint_MT,
+            unit: 'MT CO2',
+            good: data.Carbon_Footprint_MT < 5,
+            icon: 'fa-smog'
+        },
+        {
+            name: 'Water Usage',
+            value: data.Water_Usage_Liters,
+            unit: 'Liters',
+            good: data.Water_Usage_Liters < 500,
+            icon: 'fa-tint'
+        },
+        {
+            name: 'Waste Production',
+            value: data.Waste_Production_KG,
+            unit: 'KG',
+            good: data.Waste_Production_KG < 2,
+            icon: 'fa-trash'
+        },
+        {
+            name: 'Rating',
+            value: data.rating,
+            unit: '/5',
+            good: data.rating > 4.0,
+            icon: 'fa-star'
+        }
+    ];
+    
+    let html = '<div class="mt-4"><h6>Sustainability Analysis:</h6><div class="row">';
+    
+    metrics.forEach(metric => {
+        html += `
+            <div class="col-6 mb-2">
+                <div class="d-flex align-items-center">
+                    <i class="fas ${metric.icon} ${metric.good ? 'text-success' : 'text-warning'} me-2"></i>
+                    <div>
+                        <small class="d-block">${metric.name}</small>
+                        <strong>${metric.value} ${metric.unit}</strong>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div></div>';
+    return html;
+}
+
+function displayError(error) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+        <div class="text-danger">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Error</h5>
+            <div class="alert alert-danger">
+                ${error}
+            </div>
+        </div>
+    `;
+}
+
+function loadFeatureImportance() {
+    fetch('/api/product-recommendation/feature-importance')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                displayFeatureImportance(result.feature_importance);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading feature importance:', error);
+        });
+}
+
+function displayFeatureImportance(importance) {
+    const ctx = document.getElementById('featureChart').getContext('2d');
+    
+    const features = Object.keys(importance);
+    const values = Object.values(importance);
+    
+    if (featureChart) {
+        featureChart.destroy();
+    }
+    
+    featureChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: features,
+            datasets: [{
+                label: 'Importance',
+                data: values,
+                backgroundColor: 'rgba(25, 135, 84, 0.2)',
+                borderColor: 'rgba(25, 135, 84, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(25, 135, 84, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+function loadSample(type) {
+    const samples = {
+        clothing: {
+            category: 'Clothing',
+            material: 'Cotton',
+            brand: 'EcoBrand',
+            price: 45,
+            rating: 4.3,
+            reviewsCount: 156,
+            Carbon_Footprint_MT: 2.1,
+            Water_Usage_Liters: 1200,
+            Waste_Production_KG: 0.8,
+            Average_Price_USD: 42
+        },
+        electronics: {
+            category: 'Electronics',
+            material: 'Metal',
+            brand: 'GreenTech',
+            price: 299,
+            rating: 4.1,
+            reviewsCount: 89,
+            Carbon_Footprint_MT: 8.5,
+            Water_Usage_Liters: 450,
+            Waste_Production_KG: 3.2,
+            Average_Price_USD: 315
+        },
+        home: {
+            category: 'Home',
+            material: 'Wood',
+            brand: 'SustainableCorp',
+            price: 125,
+            rating: 4.5,
+            reviewsCount: 203,
+            Carbon_Footprint_MT: 3.8,
+            Water_Usage_Liters: 220,
+            Waste_Production_KG: 1.1,
+            Average_Price_USD: 135
+        }
+    };
+    
+    const sample = samples[type];
+    if (sample) {
+        Object.keys(sample).forEach(key => {
+            const element = document.querySelector(`[name="${key}"]`);
+            if (element) {
+                element.value = sample[key];
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

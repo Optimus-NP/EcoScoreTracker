@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Carbon Footprint Prediction - Sustainability Analytics{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1><i class="fas fa-smog me-2"></i>Carbon Footprint Prediction</h1>
+        <p class="text-muted">Calculate estimated carbon emissions based on customer behavior and consumption patterns.</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Form -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user me-2"></i>Customer Profile</h5>
+            </div>
+            <div class="card-body">
+                <form id="carbonForm">
+                    <div class="mb-3">
+                        <label for="totalPurchases" class="form-label">Total Purchases (last year)</label>
+                        <input type="number" class="form-control" id="totalPurchases" name="Total_Purchases" 
+                               min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="avgDistance" class="form-label">Average Distance (km)</label>
+                        <input type="number" class="form-control" id="avgDistance" name="Avg_Distance_km" 
+                               min="0" step="0.1" required>
+                        <div class="form-text">Average shipping distance per order</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="preferredPackaging" class="form-label">Preferred Packaging</label>
+                        <select class="form-select" id="preferredPackaging" name="Preferred_Packaging" required>
+                            <option value="">Select Packaging</option>
+                            <option value="Cardboard">Cardboard</option>
+                            <option value="Plastic">Plastic</option>
+                            <option value="Paper">Paper</option>
+                            <option value="Metal">Metal</option>
+                            <option value="Glass">Glass</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="returnsPercent" class="form-label">Returns Percentage (%)</label>
+                        <input type="number" class="form-control" id="returnsPercent" name="Returns_%" 
+                               min="0" max="100" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="electricityUsage" class="form-label">Electricity Usage (kWh/month)</label>
+                        <input type="number" class="form-control" id="electricityUsage" name="Electricity_kWh" 
+                               min="0" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="travelKm" class="form-label">Personal Travel (km/month)</label>
+                        <input type="number" class="form-control" id="travelKm" name="Travel_km" 
+                               min="0" step="0.1" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="serviceUsage" class="form-label">Service Usage (hours/month)</label>
+                        <input type="number" class="form-control" id="serviceUsage" name="Service_Usage_hr" 
+                               min="0" step="0.1" required>
+                        <div class="form-text">Digital services, streaming, etc.</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-calculator me-2"></i>Calculate Carbon Footprint
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Results -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-pie me-2"></i>Carbon Footprint Estimate</h5>
+            </div>
+            <div class="card-body">
+                <div id="resultsContainer" class="text-center text-muted">
+                    <i class="fas fa-smog fa-4x mb-3 opacity-25"></i>
+                    <p>Enter customer information to calculate carbon footprint</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Feature Importance Chart -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar me-2"></i>Impact Factors</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="featureChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sample Data Examples -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-users me-2"></i>Sample Customer Profiles</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>Eco-Conscious Consumer</h6>
+                        <button class="btn btn-sm btn-outline-success" onclick="loadSample('eco')">Load Profile</button>
+                        <small class="d-block text-muted mt-1">Low purchases, cardboard packaging, minimal returns</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Average Consumer</h6>
+                        <button class="btn btn-sm btn-outline-primary" onclick="loadSample('average')">Load Profile</button>
+                        <small class="d-block text-muted mt-1">Moderate consumption and travel patterns</small>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>High-Impact Consumer</h6>
+                        <button class="btn btn-sm btn-outline-danger" onclick="loadSample('high')">Load Profile</button>
+                        <small class="d-block text-muted mt-1">Frequent purchases, long distances, high returns</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Carbon Impact Guide -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle me-2"></i>Understanding Your Carbon Footprint</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <div class="text-success">
+                            <i class="fas fa-leaf fa-2x"></i>
+                            <h6 class="mt-2">Low Impact</h6>
+                            <span class="badge bg-success">< 300 kg CO2e</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="text-warning">
+                            <i class="fas fa-balance-scale fa-2x"></i>
+                            <h6 class="mt-2">Moderate</h6>
+                            <span class="badge bg-warning">300-800 kg CO2e</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="text-danger">
+                            <i class="fas fa-fire fa-2x"></i>
+                            <h6 class="mt-2">High Impact</h6>
+                            <span class="badge bg-danger">800-1500 kg CO2e</span>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="text-dark">
+                            <i class="fas fa-industry fa-2x"></i>
+                            <h6 class="mt-2">Very High</h6>
+                            <span class="badge bg-dark">1500+ kg CO2e</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let featureChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadFeatureImportance();
+    
+    document.getElementById('carbonForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        getPrediction();
+    });
+});
+
+function getPrediction() {
+    const formData = new FormData(document.getElementById('carbonForm'));
+    const data = Object.fromEntries(formData.entries());
+    
+    // Convert numeric fields
+    data.Total_Purchases = parseInt(data.Total_Purchases);
+    data.Avg_Distance_km = parseFloat(data.Avg_Distance_km);
+    data['Returns_%'] = parseFloat(data['Returns_%']);
+    data.Electricity_kWh = parseFloat(data.Electricity_kWh);
+    data.Travel_km = parseFloat(data.Travel_km);
+    data.Service_Usage_hr = parseFloat(data.Service_Usage_hr);
+    
+    const modal = new bootstrap.Modal(document.getElementById('loadingModal'));
+    modal.show();
+    
+    fetch('/api/carbon-footprint/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        modal.hide();
+        displayResults(result);
+    })
+    .catch(error => {
+        modal.hide();
+        console.error('Error:', error);
+        displayError('Error getting prediction: ' + error.message);
+    });
+}
+
+function displayResults(result) {
+    const container = document.getElementById('resultsContainer');
+    
+    if (result.success) {
+        const co2 = result.prediction_rounded;
+        const category = getCO2Category(co2);
+        
+        container.innerHTML = `
+            <div class="text-${category.color}">
+                <i class="fas ${category.icon} fa-3x mb-3"></i>
+                <h4>Estimated Carbon Footprint</h4>
+                <div class="alert alert-${category.color}">
+                    <h2 class="mb-0">${co2} kg CO2e</h2>
+                    <small>per year</small>
+                </div>
+                <div class="mt-3">
+                    <span class="badge bg-${category.color} fs-6">${category.label}</span>
+                </div>
+                <div class="mt-3 text-start">
+                    <h6>Recommendations:</h6>
+                    <ul class="list-unstyled">
+                        ${category.recommendations.map(rec => `<li><i class="fas fa-lightbulb me-2"></i>${rec}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `;
+    } else {
+        displayError(result.error);
+    }
+}
+
+function getCO2Category(co2) {
+    if (co2 < 300) {
+        return {
+            color: 'success',
+            icon: 'fa-leaf',
+            label: 'Low Impact',
+            recommendations: [
+                'Keep up the great work!',
+                'Consider sharing your eco-friendly practices',
+                'Look for carbon-negative products'
+            ]
+        };
+    } else if (co2 < 800) {
+        return {
+            color: 'warning',
+            icon: 'fa-balance-scale',
+            label: 'Moderate Impact',
+            recommendations: [
+                'Choose eco-friendly packaging options',
+                'Reduce return rates by careful selection',
+                'Consider renewable energy sources'
+            ]
+        };
+    } else if (co2 < 1500) {
+        return {
+            color: 'danger',
+            icon: 'fa-fire',
+            label: 'High Impact',
+            recommendations: [
+                'Consolidate purchases to reduce shipping',
+                'Switch to sustainable transport options',
+                'Optimize electricity usage'
+            ]
+        };
+    } else {
+        return {
+            color: 'dark',
+            icon: 'fa-industry',
+            label: 'Very High Impact',
+            recommendations: [
+                'Significantly reduce purchase frequency',
+                'Choose local and sustainable products',
+                'Implement energy-saving measures'
+            ]
+        };
+    }
+}
+
+function displayError(error) {
+    const container = document.getElementById('resultsContainer');
+    container.innerHTML = `
+        <div class="text-danger">
+            <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+            <h5>Error</h5>
+            <div class="alert alert-danger">
+                ${error}
+            </div>
+        </div>
+    `;
+}
+
+function loadFeatureImportance() {
+    fetch('/api/carbon-footprint/feature-importance')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                displayFeatureImportance(result.feature_importance);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading feature importance:', error);
+        });
+}
+
+function displayFeatureImportance(importance) {
+    const ctx = document.getElementById('featureChart').getContext('2d');
+    
+    const features = Object.keys(importance);
+    const values = Object.values(importance);
+    
+    if (featureChart) {
+        featureChart.destroy();
+    }
+    
+    featureChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: features,
+            datasets: [{
+                data: values,
+                backgroundColor: [
+                    'rgba(255, 193, 7, 0.8)',
+                    'rgba(13, 110, 253, 0.8)',
+                    'rgba(25, 135, 84, 0.8)',
+                    'rgba(220, 53, 69, 0.8)',
+                    'rgba(13, 202, 240, 0.8)',
+                    'rgba(108, 117, 125, 0.8)',
+                    'rgba(111, 66, 193, 0.8)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function loadSample(type) {
+    const samples = {
+        eco: {
+            Total_Purchases: 8,
+            Avg_Distance_km: 150,
+            Preferred_Packaging: 'Cardboard',
+            'Returns_%': 1.5,
+            Electricity_kWh: 180,
+            Travel_km: 300,
+            Service_Usage_hr: 15
+        },
+        average: {
+            Total_Purchases: 15,
+            Avg_Distance_km: 450,
+            Preferred_Packaging: 'Plastic',
+            'Returns_%': 3.0,
+            Electricity_kWh: 320,
+            Travel_km: 1000,
+            Service_Usage_hr: 25
+        },
+        high: {
+            Total_Purchases: 35,
+            Avg_Distance_km: 800,
+            Preferred_Packaging: 'Plastic',
+            'Returns_%': 8.5,
+            Electricity_kWh: 550,
+            Travel_km: 2500,
+            Service_Usage_hr: 45
+        }
+    };
+    
+    const sample = samples[type];
+    if (sample) {
+        Object.keys(sample).forEach(key => {
+            const element = document.querySelector(`[name="${key}"]`);
+            if (element) {
+                element.value = sample[key];
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
