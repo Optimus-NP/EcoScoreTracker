@@ -4,16 +4,18 @@
     {
       "src": "api/app.py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 60 }
+      "config": {
+        "maxDuration": 60
+      }
     }
   ],
   "routes": [
-    { "src": "/(.*)", "dest": "/api/app.py" }
-  ],
-  "functions": {
-    "api/app.py": {
-      "excludeFiles": "tests/**"
+    {
+      "src": "/(.*)",
+      "dest": "/api/app.py"
     }
-  },
-  "env": { "SESSION_SECRET": "my-session-key" }
+  ],
+  "env": {
+    "SESSION_SECRET": "my-session-key"
+  }
 }
