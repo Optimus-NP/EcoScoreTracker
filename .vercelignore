@@ -1,16 +1,36 @@
+# ─── Ignore Python caches & virtual‐envs ───────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
 *.pyo
 *.pyd
-.Python
 *.so
+.Python
 .venv/
 venv/
 env/
+uv.lock
+
+# ─── Ignore config, docs, tests, git, editor files ────────────────────
 .env
 .git/
 .gitignore
 README.md
 .replit
-uv.lock
-requirements-vercel.txt
+docs/
+tests/
+*.md
+*.yml
+*.yaml
+
+# ─── Ignore anything else you don’t want uploaded ────────────────────
+node_modules/
+dist/
+build/
+.cache/
+
+# ─── But make sure we include the things Vercel needs ─────────────────
+!important.txt    # example—remove if not needed
+!api/
+!api/app.py
+!requirements-vercel.txt
+!vercel.json
