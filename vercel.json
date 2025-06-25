@@ -13,7 +13,7 @@
     }
   ],
   "env": {
-    "SESSION_SECRET": "@session_secret"
+    "SESSION_SECRET": "my-session-key"
   },
   "functions": {
     "app.py": {
