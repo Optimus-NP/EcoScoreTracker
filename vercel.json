@@ -3,21 +3,19 @@
   "builds": [
     {
       "src": "api/app.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "maxDuration": 60
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "app.py"
+      "dest": "/api/app.py"
     }
   ],
   "env": {
     "SESSION_SECRET": "my-session-key"
-  },
-  "functions": {
-    "app.py": {
-      "maxDuration": 60
-    }
   }
 }
